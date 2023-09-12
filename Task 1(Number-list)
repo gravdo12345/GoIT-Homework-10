@@ -1,22 +1,26 @@
-import re
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-def is_valid_phone_number(phone_number):
-    pattern1 = r'\(\d{3}\) \d{3}-\d{4}'
-    pattern2 = r'\d{3}-\d{3}-\d{4}'
-    return re.match(pattern1, phone_number) or re.match(pattern2, phone_number)
+public class Main {
+    public static void main(String[] args) {
+        printValidPhoneNumbers("file.txt");
+    }
 
-def main(file_name):
-    try:
-        with open(file_name, 'r') as file:
-            for line in file:
-                phone_number = line.strip()
-                if is_valid_phone_number(phone_number):
-                    print(phone_number)
-    except FileNotFoundError:
-        print(f"File '{file_name}' not found.")
-    except Exception as e:
-        print(f"Error: {e}")
-
-if __name__ == "__main__":
-    file_name = "file.txt"
-    main(file_name)
+    public static void printValidPhoneNumbers(String filename) {
+        Pattern pattern = Pattern.compile("\\((\\d{3})\\)\\s?(\\d{3})-(\\d{4})|(\\d{3})-(\\d{3})-(\\d{4})");
+        try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                Matcher matcher = pattern.matcher(line);
+                if (matcher.matches()) {
+                    System.out.println(line);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
