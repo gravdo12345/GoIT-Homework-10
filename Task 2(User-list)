@@ -1,34 +1,57 @@
-import json
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
-class User:
-    def __init__(self, name, age):
-        self.name = name
-        self.age = age
+class User {
+    private String name;
+    private int age;
 
-def main(input_file, output_file):
-    users = []
+    public User(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+}
 
-    try:
-        with open(input_file, 'r') as file:
-            lines = file.readlines()
-            headers = lines[0].strip().split()
-            for line in lines[1:]:
-                values = line.strip().split()
-                if len(values) == len(headers):
-                    user = User(values[0], int(values[1]))
-                    users.append(user)
-                else:
-                    print(f"Skipping invalid line: {line}")
+public class Main {
+    public static void main(String[] args) {
+        List<User> users = readUsersFromFile("file.txt");
+        writeUsersToJsonFile(users, "user.json");
+    }
 
-        with open(output_file, 'w') as json_file:
-            json.dump([vars(user) for user in users], json_file, indent=4)
+    public static List<User> readUsersFromFile(String filename) {
+        List<User> users = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
+            String line;
+            String[] headers = null;
+            while ((line = br.readLine()) != null) {
+                String[] parts = line.split(" ");
+                if (headers == null) {
+                    headers = parts;
+                } else {
+                    String name = parts[0];
+                    int age = Integer.parseInt(parts[1]);
+                    users.add(new User(name, age));
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return users;
+    }
 
-    except FileNotFoundError:
-        print(f"File '{input_file}' not found.")
-    except Exception as e:
-        print(f"Error: {e}")
-
-if __name__ == "__main__":
-    input_file = "file.txt"
-    output_file = "user.json"
-    main(input_file, output_file)
+    public static void writeUsersToJsonFile(List<User> users, String filename) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(filename))) {
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            String json = gson.toJson(users);
+            bw.write(json);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
